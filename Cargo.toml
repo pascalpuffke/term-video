@@ -1,0 +1,11 @@
+[package]
+name = "term-video"
+version = "0.1.0"
+authors = ["Pascal Puffke <pascal@pascalpuffke.de>"]
+edition = "2018"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/MineClashTV/term-video"
+
+[dependencies]
+image = "0.23.14"
+walkdir = "2.3.2"
