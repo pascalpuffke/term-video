@@ -1,4 +1,5 @@
 # term-video
+[preview.png](Preview)
 Don't use this.
 
 I really just wrote this program to play 'Bad Apple' in my terminal, be happy for 10 seconds that it actually sort of works and then return to the depressing reality.
@@ -13,10 +14,6 @@ Then enjoy your computer fan noises. It should not be too bad, as this program o
 # Problems
 - It only utilizes a single thread and is therefore painfully slow. On my decently fast machine, it took 15 minutes for converting ~6700 frames to play back Bad Apple.
 
-- It does not yet detect the FPS of the input video and uses a hard-coded value.
-
-- Playback is not frame-perfectly timed to the source. It was about 5 to 8 percent slower than the input video.
-
 - It's utterly useless.
 
 # Dependencies
@@ -25,4 +22,4 @@ Then enjoy your computer fan noises. It should not be too bad, as this program o
 
 [walkdir](https://github.com/BurntSushi/walkdir) 2.3.2
 
-[term-size](https://github.com/clap-rs/term_size-rs) 0.3.2
+[structopt](https://github.com/TeXitoi/structopt) 0.3.21 (don't be fooled though, its functionality is not implemented yet!)
