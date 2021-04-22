@@ -9,30 +9,30 @@ use walkdir::{DirEntry, WalkDir};
 
 // Global constants, feel free to mess around with them.
 const FRAMES_DIR: &str = "split_frames";
-// TODO get terminal dimensions using term-size crate
+// Fallback dimensions should term-size fail for some reason
 const WIDTH: u32 = 132;
 const HEIGHT: u32 = 43;
 // TODO get video framerate automatically, something something ffmpeg i dont know
-const FPS: u32 = 30;
+const FPS: u32 = 75;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let input = args.get(1).expect("need to specify an input video file");
 
-    /*
-    if !input.ends_with(".mp4") {
-        panic!("not a video file: {}", input);
-    }
-     */
-
-    println!("using video file {}", input);
+    println!("using file {}", input);
 
     make_dir();
     split_frames(input);
 
     println!("split video file into its separate frames");
 
-    display_loop();
+    if let Some((w, h)) = term_size::dimensions() {
+        println!("using current terminal dimensions: {}x{}", w, h);
+        display_loop(w as u32, h as u32);
+    } else {
+        println!("using fallback dimensions: {}x{}", WIDTH, HEIGHT);
+        display_loop(WIDTH, HEIGHT);
+    }
 
     // clean up temporary directory before exiting
     fs::remove_dir_all(FRAMES_DIR)
@@ -69,7 +69,7 @@ fn split_frames(file_name: &str) {
 }
 
 // This might be the worst Rust code you will ever see.
-fn display_loop() {
+fn display_loop(width: u32, height: u32) {
     let files = WalkDir::new(FRAMES_DIR)
         .sort_by_file_name()
         .into_iter()
@@ -88,7 +88,7 @@ fn display_loop() {
             .unwrap()
             .decode()
             .unwrap()
-            .resize_exact(WIDTH, HEIGHT, FilterType::Nearest);
+            .resize_exact(width, height, FilterType::Nearest);
 
         resized_images.push(image);
         fs::remove_file(&file_name)
@@ -101,8 +101,8 @@ fn display_loop() {
     clear_screen();
     let mut buffer = String::new();
     for frame in resized_images {
-        for y in 0..HEIGHT {
-            for x in 0..WIDTH {
+        for y in 0..height {
+            for x in 0..width {
                 let luma = frame.get_pixel(x, y).to_luma();
                 let char = match *luma.0.get(0).unwrap() {
                     // It can't be that bad if it works, right?
@@ -123,6 +123,7 @@ fn display_loop() {
 
                 buffer.push(char);
             }
+
             buffer.push('\n');
         }
 
