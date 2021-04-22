@@ -12,7 +12,9 @@ Do not expect this project to grow into anything larger than that, though I migh
 Then enjoy your computer fan noises. It should not be too bad, as this program only utilizes a single thread.
 
 # Problems
-- It only utilizes a single thread and is therefore painfully slow. On my decently fast machine, it took 15 minutes for converting ~6700 frames to play back Bad Apple.
+- It only utilizes a single thread and is therefore painfully slow. To make frame processing 
+  bearable, I offloaded it to ffmpeg instead of using a custom Rust implementation as I 
+  just could not be bothered reading into threading.
 
 - It's utterly useless.
 

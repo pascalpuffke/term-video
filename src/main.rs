@@ -16,6 +16,7 @@
 */
 
 use image::{io::Reader, DynamicImage, GenericImageView, Pixel};
+use std::intrinsics::min_align_of;
 use std::{
     env, fs,
     process::{Command, Stdio},
@@ -136,11 +137,10 @@ fn display_loop(cache_dir: &str, width: u32, height: u32, frame_rate: u32) {
             .unwrap()
         })
         .collect::<Vec<DynamicImage>>();
-    let num_frames = frames.len();
     let mut frame_buffer = String::new();
-    let mut display_buffer: Vec<String> = Vec::with_capacity(num_frames);
+    let mut display_buffer: Vec<String> = Vec::with_capacity(frames.len());
 
-    // Filling the frame buffer before starting playback. Will use more memory and takes a lot
+    // Filling the display buffer before starting playback. Will use more memory and takes a lot
     // longer to get started, but eliminates artifacts
     for frame in frames {
         for y in 0..height {
