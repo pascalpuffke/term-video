@@ -13,7 +13,7 @@ const FRAMES_DIR: &str = "split_frames";
 const WIDTH: u32 = 132;
 const HEIGHT: u32 = 43;
 // TODO get video framerate automatically, something something ffmpeg i dont know
-const FPS: u32 = 75;
+const FPS: u32 = 30;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -76,7 +76,7 @@ fn display_loop(width: u32, height: u32) {
         .skip(1)
         .map(|f| f.unwrap())
         .collect::<Vec<DirEntry>>();
-    let mut resized_images = Vec::new();
+    let mut resized_images = Vec::with_capacity(files.len());
     let mut time_since_last_frame = get_current_time_ms();
 
     for i in 0..files.len() {
