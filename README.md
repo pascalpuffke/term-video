@@ -24,4 +24,7 @@ Then enjoy your computer fan noises. It should not be too bad, as this program o
 # Dependencies
 
 [image-rs](https://github.com/image-rs/image) 0.23.14
+
 [walkdir](https://github.com/BurntSushi/walkdir) 2.3.2
+
+[term-size](https://github.com/clap-rs/term_size-rs) 0.3.2
