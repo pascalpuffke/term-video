@@ -1,5 +1,5 @@
 # term-video
-[preview.png](Preview)
+![Preview](preview.png)
 Don't use this.
 
 I really just wrote this program to play 'Bad Apple' in my terminal, be happy for 10 seconds that it actually sort of works and then return to the depressing reality.
