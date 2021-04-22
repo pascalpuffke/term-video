@@ -1,5 +1,5 @@
 # term-video
-![Preview](preview.png)
+[preview.png](Preview)
 Don't use this.
 
 I really just wrote this program to play 'Bad Apple' in my terminal, be happy for 10 seconds that it actually sort of works and then return to the depressing reality.
@@ -17,6 +17,8 @@ Then enjoy your computer fan noises. It should not be too bad, as this program o
 - It's utterly useless.
 
 # Dependencies
+
+[ffmpeg, ffprobe](https://ffmpeg.org/) at runtime
 
 [image-rs](https://github.com/image-rs/image) 0.23.14
 

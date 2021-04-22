@@ -176,10 +176,10 @@ fn display_loop(cache_dir: &str, width: u32, height: u32, frame_rate: u32) {
     clear_screen();
 
     // Displaying each frame
-    for frame in display_buffer {
+    for frame in &display_buffer {
         println!("{}", frame);
 
-        thread::sleep(Duration::from_millis((1000 / frame_rate) as u64));
+        thread::sleep(Duration::from_micros((1000000 / frame_rate) as u64));
         clear_screen();
     }
 }
