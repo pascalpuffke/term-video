@@ -13,8 +13,6 @@ Then enjoy your computer fan noises. It should not be too bad, as this program o
 # Problems
 - It only utilizes a single thread and is therefore painfully slow. On my decently fast machine, it took 15 minutes for converting ~6700 frames to play back Bad Apple.
 
-- It does not yet determine the terminal size automatically and uses hard-coded values.
-
 - It does not yet detect the FPS of the input video and uses a hard-coded value.
 
 - Playback is not frame-perfectly timed to the source. It was about 5 to 8 percent slower than the input video.
