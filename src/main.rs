@@ -15,61 +15,76 @@
    along with term-video.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+use clap::{AppSettings, Clap};
 use image::{io::Reader, DynamicImage, GenericImageView, Pixel};
-use std::intrinsics::min_align_of;
 use std::{
-    env, fs,
-    process::{Command, Stdio},
+    fs,
+    process::{exit, Command, Stdio},
     str::FromStr,
     thread,
     time::Duration,
 };
 use walkdir::WalkDir;
 
-// TODO investigate playback speed issues; might just be the terminal emulator at this point
-
-// TODO replace with structopt or clap
-const FRAMES_DIR: &str = "split_frames";
-const WIDTH: u32 = 132;
-const HEIGHT: u32 = 43;
-const FPS: u32 = 30;
-
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    let input = args.get(1).expect("need to specify an input video file");
-
-    println!("Using file {}", input);
-
-    let mut frame_rate = FPS;
-    let mut width = WIDTH;
-    let mut height = HEIGHT;
-
-    if let Some(fps) = get_frame_rate(input) {
-        frame_rate = fps;
-    } // fall back to 30fps otherwise
-
-    if let Some((w, h)) = term_size::dimensions() {
-        width = w as u32;
-        height = h as u32;
-    }
-
-    make_dir();
-    split_and_resize_frames(input, FRAMES_DIR, width, height);
-    display_loop(FRAMES_DIR, width, height, frame_rate);
-
-    // clean up temporary directory before exiting
-    fs::remove_dir_all(FRAMES_DIR).expect("could not delete temporary directory, enjoy the mess");
-
-    println!("Finished playback at {} fps", frame_rate);
+#[derive(Clap)]
+#[clap(version = "0.1.0", author = "Pascal Puffke <pascal@pascalpuffke.de>", setting = AppSettings::ColoredHelp)]
+struct Opts {
+    #[clap(
+        short,
+        long,
+        default_value = "split_frames",
+        about = "Where to save temporary frame data"
+    )]
+    cache: String,
+    #[clap(
+        short,
+        long,
+        about = "Input video file, can be any format as long as it's supported by ffmpeg."
+    )]
+    input: String,
+    #[clap(
+        short,
+        long,
+        about = "Horizontal playback resolution [default: current terminal rows]"
+    )]
+    width: Option<u32>,
+    #[clap(
+        short,
+        long,
+        about = "Vertical playback resolution [default: current terminal columns]"
+    )]
+    height: Option<u32>,
+    #[clap(
+        short,
+        long,
+        about = "Playback frame rate [default: input video FPS, or 30 should ffprobe fail]"
+    )]
+    fps: Option<u32>,
 }
 
-fn make_dir() {
-    // Creating directory to store all frames in
-    if let Err(_) = fs::create_dir(FRAMES_DIR) {
-        // delete and re-create it
-        fs::remove_dir_all(FRAMES_DIR)
-            .expect(&format!("could not delete directory {}", FRAMES_DIR));
-        fs::create_dir(FRAMES_DIR).expect(&format!("could not create directory {}", FRAMES_DIR));
+fn main() {
+    let opts = Opts::parse();
+    let term_dim = term_size::dimensions().unwrap_or((80, 24));
+    let w = opts.width.unwrap_or(term_dim.0 as u32);
+    let h = opts.height.unwrap_or(term_dim.1 as u32);
+    let fps = opts
+        .fps
+        .unwrap_or(get_frame_rate(&opts.input).unwrap_or(30));
+
+    make_dir(&opts.cache);
+    split_and_resize_frames(&opts.input, &opts.cache, w, h);
+    display_loop(&opts.cache, w, h, fps);
+
+    // clean up temporary directory before exiting
+    fs::remove_dir_all(&opts.cache).expect("could not delete temporary directory, enjoy the mess");
+
+    println!("Finished playback at {} fps", fps);
+}
+
+fn make_dir(name: &str) {
+    if let Err(_) = fs::create_dir(name) {
+        fs::remove_dir_all(name).expect(&format!("could not delete directory {}", name));
+        fs::create_dir(name).expect(&format!("could not create directory {}", name));
     }
 }
 
@@ -87,7 +102,10 @@ fn split_and_resize_frames(file_name: &str, cache_dir: &str, width: u32, height:
         ])
         .stdout(Stdio::null())
         .output()
-        .expect("failed to execute ffmpeg");
+        .unwrap_or_else(|e| {
+            println!("Failed to execute ffmpeg - do you have it installed? {}", e);
+            exit(1);
+        });
 }
 
 fn get_frame_rate(video: &str) -> Option<u32> {
@@ -121,7 +139,7 @@ fn get_frame_rate(video: &str) -> Option<u32> {
 }
 
 fn display_loop(cache_dir: &str, width: u32, height: u32, frame_rate: u32) {
-    // Terribly bad code.
+    // unwrapunwrapunwrapunwrapunwrapunwrapunwrapunwrap
     let frames = WalkDir::new(cache_dir)
         .sort_by_file_name()
         .into_iter()
