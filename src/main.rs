@@ -16,7 +16,7 @@
 */
 
 use clap::{AppSettings, Clap};
-use image::{io::Reader, DynamicImage, GenericImageView, Pixel};
+use image::{io::Reader, GenericImageView, Pixel};
 use std::{
     fs,
     process::{exit, Command, Stdio},
@@ -25,6 +25,12 @@ use std::{
     time::Duration,
 };
 use walkdir::WalkDir;
+
+/*
+const CHARS: [char; 13] = [
+    ' ', '.', ',', '-', '~', ':', ';', '=', '!', '*', '#', '$', '@',
+];
+ */
 
 #[derive(Clap)]
 #[clap(version = "0.1.0", author = "Pascal Puffke <pascal@pascalpuffke.de>", setting = AppSettings::ColoredHelp)]
@@ -77,8 +83,6 @@ fn main() {
 
     // clean up temporary directory before exiting
     fs::remove_dir_all(&opts.cache).expect("could not delete temporary directory, enjoy the mess");
-
-    println!("Finished playback at {} fps", fps);
 }
 
 fn make_dir(name: &str) {
@@ -139,9 +143,11 @@ fn get_frame_rate(video: &str) -> Option<u32> {
 }
 
 fn display_loop(cache_dir: &str, width: u32, height: u32, frame_rate: u32) {
-    // unwrapunwrapunwrapunwrapunwrapunwrapunwrapunwrap
-    let frames = WalkDir::new(cache_dir)
-        .sort_by_file_name()
+    let mut frame_buffer = String::with_capacity((height + (width * height)) as usize);
+    let mut display_buffer: Vec<String> =
+        Vec::with_capacity(WalkDir::new(cache_dir).into_iter().skip(1).count());
+
+    WalkDir::new(cache_dir)
         .into_iter()
         .skip(1)
         .map(|f| {
@@ -154,42 +160,20 @@ fn display_loop(cache_dir: &str, width: u32, height: u32, frame_rate: u32) {
             .decode()
             .unwrap()
         })
-        .collect::<Vec<DynamicImage>>();
-    let mut frame_buffer = String::new();
-    let mut display_buffer: Vec<String> = Vec::with_capacity(frames.len());
+        .for_each(|frame| {
+            for y in 0..height {
+                for x in 0..width {
+                    frame_buffer.push(get_pixel_char(
+                        *frame.get_pixel(x, y).to_luma().0.get(0).unwrap(),
+                    ))
+                }
 
-    // Filling the display buffer before starting playback. Will use more memory and takes a lot
-    // longer to get started, but eliminates artifacts
-    for frame in frames {
-        for y in 0..height {
-            for x in 0..width {
-                let luma = frame.get_pixel(x, y).to_luma();
-                let pixel = match *luma.0.get(0).unwrap() {
-                    // It can't be that bad if it works, right?
-                    0 => ' ',
-                    1..=21 => '.',
-                    22..=43 => ',',
-                    44..=65 => '-',
-                    66..=87 => '~',
-                    88..=109 => ':',
-                    110..=131 => ';',
-                    132..=153 => '=',
-                    154..=175 => '!',
-                    176..=197 => '*',
-                    198..=219 => '#',
-                    220..=241 => '$',
-                    _ => '@',
-                };
-
-                frame_buffer.push(pixel);
+                frame_buffer.push('\n');
             }
 
-            frame_buffer.push('\n');
-        }
-
-        display_buffer.push(frame_buffer.clone());
-        frame_buffer.clear();
-    }
+            display_buffer.push(frame_buffer.clone());
+            frame_buffer.clear();
+        });
 
     clear_screen();
 
@@ -199,6 +183,25 @@ fn display_loop(cache_dir: &str, width: u32, height: u32, frame_rate: u32) {
 
         thread::sleep(Duration::from_micros((1000000 / frame_rate) as u64));
         clear_screen();
+    }
+}
+
+// TODO make this less dumb
+fn get_pixel_char(luminosity: u8) -> char {
+    match luminosity {
+        0 => ' ',
+        1..=21 => '.',
+        22..=43 => ',',
+        44..=65 => '-',
+        66..=87 => '~',
+        88..=109 => ':',
+        110..=131 => ';',
+        132..=153 => '=',
+        154..=175 => '!',
+        176..=197 => '*',
+        198..=219 => '#',
+        220..=241 => '$',
+        _ => '@',
     }
 }
 
