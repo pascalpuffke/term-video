@@ -2,6 +2,19 @@
 ![Preview](preview.png)
 I guess this is usable now...
 
+# Compilation
+Since this project is built using Rust, install its toolchain first, for example using [rustup](https://rustup.rs/).
+
+```
+git clone https://github.com/pascalpuffke/term-video
+cd term-video
+cargo build --release
+```
+
+After the build process has finished, the executable is located under ```target/release/term-video```. You can then copy it to a location that is checked by PATH:
+
+```cp target/release/term-video /usr/bin```
+
 # Usage
 ```term-video [OPTIONS] --input <input>```
 
